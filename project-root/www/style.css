@@ -3,6 +3,8 @@ html {font-family: sans-serif;-ms-text-size-adjust: 100%;-webkit-text-size-adjus
 
 /* # universal styles */
 
+* { box-sizing: border-box; }
+
 ::-moz-selection {
 	background: #fcb7b3;
 	text-shadow: none;
@@ -18,6 +20,7 @@ html,body {
 	width: 100%;
 	height: 100%;
 	margin: 0;
+	background-color: #f1f2f3;
 }
 
 /* # defaults */
@@ -35,9 +38,27 @@ pre {
 /* # site styles */
 
 main {
-	width: calc(100% - 2rem);
+	width: calc(100% - 4rem);
 	max-width: 500px;
-	margin: auto;
+	margin: 2rem auto;
+	background-color: #fff;
+	padding: 2rem;
+	border-radius: 12px;
+}
+
+.voting ul {
+	list-style: none;
+	padding-left: 0;
+}
+
+.voting li {
+	width: 100%;
+	margin-bottom: 0.5rem;
+}
+
+.voting li button {
+	width: 100%;
+	padding: 1rem;
 }
 
 .input-section {
@@ -51,11 +72,26 @@ input[type="text"] {
 	background: #f2f3f3;
 	border: 2px solid #f1f2f3;
 	border-radius: 6px;
+}
 
+button {
+	font-size: 1rem;
+	padding: 0.5rem;
+	background: #5b5;
+	border: none;
+	border-radius: 6px;
+	color: #fff;
 }
 
 section {
 	margin-bottom: 2rem;
+}
+section:last-of-type {
+	margin-bottom: 0;
+}
+
+h1:first-child {
+	margin-top: 0;
 }
 
 /* # extras */
