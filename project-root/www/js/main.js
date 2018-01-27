@@ -17,11 +17,7 @@ var data = {
   // the text sent to the player
   message: 'here\'s a message!',
   // the options the player is voting between
-  voteOptions: [
-    'option 1',
-    'option 2',
-    'option 3'
-  ]
+  voteOptions: 0
 }
 
 var ipAddressRegex = /(\d){1,3}.(\d){1,3}.(\d){1,3}.(\d){1,3}/
@@ -47,7 +43,7 @@ var serverConnect = function () {
     return nameInput.value
   }
 
-  function serverIp() {
+  function serverAddress() {
     return ipAddress
   }
 
@@ -55,7 +51,7 @@ var serverConnect = function () {
     serverInput.addEventListener('keydown', connectServer, false)
     connectButton.addEventListener('click', connectServer, false)
 
-    var _ipAddress = window.localStorage.getItem('ipAddress')
+    var _ipAddress = window.localStorage.getItem('serverAddress')
     var _username = window.localStorage.getItem('username')
     if (_ipAddress !== undefined) { serverInput.value = _ipAddress }
     if (_username !== undefined) { nameInput.value = _username }
@@ -69,7 +65,7 @@ var serverConnect = function () {
       ipAddress = serverInput.value
       if (ipAddress.match(ipAddressRegex)) {
         setStatus('trying to connect')
-        sock = new WebSocket('ws://' + ipAddress + ':9999')
+        sock = new WebSocket('ws://' + ipAddress + ':88')
         sock.addEventListener('open', onConnect, false)
         sock.addEventListener('message', onMessage, false)
         sock.addEventListener('error', onError, false)
@@ -84,7 +80,7 @@ var serverConnect = function () {
     toggleElement: toggleElement,
     serverInput: serverInput,
     username: username,
-    serverIp: serverIp
+    serverAddress: serverAddress
   }
 }()
 
@@ -146,7 +142,8 @@ function sendData(data) {
 }
 
 function onConnect() {
-  window.localStorage.setItem('ipAddress', serverConnect.serverIp())
+  console.log('connected!')
+  window.localStorage.setItem('serverAddress', serverConnect.serverAddress())
   window.localStorage.setItem('username', serverConnect.username())
 
   serverConnect.toggleElement(false)
@@ -157,6 +154,7 @@ function onConnect() {
   console.log(_data)
 
   testElem.classList.remove('hidden')
+  setStatus('connected to server!')
 }
 
 function onError(e) {

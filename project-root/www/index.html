@@ -25,7 +25,9 @@
 			<label>Server:</label>
 			<input type="text" name="server-connect" id="server-input" maxlength="15">
 		</div>
-		<button id="connect-button">connect</button>
+		<div class="input-section">
+			<button id="connect-button">connect</button>
+		</div>
 	</section>
 
 	<section class="voting" id="voting">
@@ -34,8 +36,10 @@
 
 	<section class="hidden" id="test">
 		<div id="message"></div>
-		<input type="text" name="sock" id="input" maxlength="50">
-		<button id="send">send</button>
+		<div class="input-section with-button">
+			<input type="text" name="sock" id="input" maxlength="50">
+			<button id="send">send</button>
+		</div>
 	</section>
 
 	<section id="status">~ status ~</section>
