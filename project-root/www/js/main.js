@@ -13,7 +13,7 @@ var data = {
   questionType: 'text',
   answers: [
     'nice',
-    'butts',
+    'cool',
     'rad'
   ]
 }
@@ -38,6 +38,10 @@ var serverConnect = function () {
 
   function clearIpInput() {
     serverInput.value = ''
+  }
+
+  function username() {
+    return nameInput.value
   }
 
   function init() {
@@ -65,7 +69,35 @@ var serverConnect = function () {
 
   return {
     toggleElement: toggleElement,
-    clearIpInput: clearIpInput
+    clearIpInput: clearIpInput,
+    username: username
+  }
+}()
+
+var voting = function () {
+  element = document.getElementById('voting')
+
+  function displayVoteOptions(options) {
+    removeAllChildren(element)
+    var ul = document.createElement('ul')
+    for (var i = 0; i < options.length; i++) {
+      var li = document.createElement('li')
+      var btn = document.createElement('button')
+      btn.textContent = options[i]
+      btn.setAttribute('id', options[i])
+      btn.addEventListener('click', vote, false)
+      li.appendChild(btn)
+      ul.appendChild(li)
+    }
+    element.appendChild(ul)
+  }
+
+  function vote(e) {
+    console.log(e)
+  }
+
+  return {
+    displayVoteOptions: displayVoteOptions
   }
 }()
 
@@ -76,16 +108,21 @@ function setStatus(text) {
 
 function connect() {
   serverConnect.toggleElement(false)
+  data.name = serverConnect.username()
 
   _data = JSON.stringify(data)
   sock.send(_data)
   console.log('sent ↓')
   console.log(_data)
+
+  testElem.classList.remove('hidden')
 }
 
 function onMessage(e) {
   message.textContent = e.data
-  console.log('got ' + e.data)
+  data = JSON.parse(e.data)
+  console.log('got ↓')
+  console.log(data)
 }
 
 function sendMessage() {
@@ -94,13 +131,19 @@ function sendMessage() {
 }
 
 function onError(e) {
-  setStatus('there was an issue connecting with this server,\ndouble check your connection and ip address');
+  setStatus('there was an issue connecting with this server, double check your connection and ip address');
 }
 
 function onClose() {
   setStatus('connection closed')
   serverConnect.toggleElement(true)
   serverConnect.clearIpInput()
+}
+
+function removeAllChildren(parent) {
+  while (parent.firstChild) {
+    parent.removeChild(parent.firstChild);
+  }
 }
 
 
