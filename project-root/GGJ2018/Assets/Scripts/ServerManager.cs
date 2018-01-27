@@ -6,55 +6,101 @@ using UnityEngine.UI;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
-public class ServerManager : MonoBehaviour {
-
-    [SerializeField] Text ipDisplay;
-
-    private void Start ()
+namespace WritersFlock
+{
+    public class ServerManager : MonoBehaviour
     {
-        var wssv = new WebSocketServer(9999);
-        wssv.AddWebSocketService<TextDisplay>("/");
-        wssv.Start();
-        ipDisplay.text = Network.player.ipAddress;
-    }
 
-}
+        [Header("Server Config")]
+        public Text ipDisplay;
+        public int port = 9999;
 
+        private List<string> players;
+        private WebSocketServer socketConnection;
 
-public class TextDisplay : WebSocketBehavior {
-    protected override void OnMessage(MessageEventArgs e) {
-        Debug.Log(e.Data);
-        string data = e.Data;
-        var jsonClass = MessageJSON.CreateFromJSON(data);
+        //Singleton
+        public static ServerManager instance { get; private set; }
 
-        Debug.Log("name: " + jsonClass.name);
-        Debug.Log("q type: " + jsonClass.questionType);
-        foreach (var item in jsonClass.answers)
+        private void Awake ()
         {
-            Debug.Log("answer: " + item);
+            if (instance != null && instance != this)
+            {
+                // Destroy if another Gamemanager already exists
+                Destroy(gameObject);
+            }
+            else
+            {
+
+                // Here we save our singleton S
+                instance = this;
+                // Furthermore we make sure that we don't destroy between scenes
+                DontDestroyOnLoad(gameObject);
+            }
         }
 
-        jsonClass.name += " is a person";
+        //Server Init
+        private void Start ()
+        {
+            socketConnection = new WebSocketServer(port);
+            socketConnection.AddWebSocketService<MessageService>("/");
+            socketConnection.Start();
+            Debug.Log("Server running...");
+            //TODO: Change this shit
+            ipDisplay.text = Network.player.ipAddress;
+        }
 
-        data = jsonClass.SaveJSON();
-        Send(data);
+        public bool AddNewPlayer(string name)
+        {
+            if(players.Contains(name)) { return false; }
+            players.Add(name);
+            return true;
+        }
+        
+    }
+
+
+    public class MessageService : WebSocketBehavior
+    {
+
+        protected override void OnMessage (MessageEventArgs e)
+        {
+            Debug.Log("Recieving Message...");
+            string data = e.Data;
+            var jsonClass = ClientToServerMessage.CreateFromJSON(data);
+            ParseMessage(jsonClass);
+        }
+
+        private void ParseMessage (ClientToServerMessage message)
+        {
+            var server = ServerManager.instance;
+            switch (message.messageType)
+            {
+                case MessageType.Connect:
+                    if (server.AddNewPlayer(message.playerName))
+                    {
+                        var successMessage = new ServerToClientMessage();
+                        successMessage.messageType = MessageType.Connect;
+                        successMessage.messageTitle = "Connected";
+                        SendMessageToClient(successMessage);
+                    }
+                    else
+                    {
+                        var failMessage = new ServerToClientMessage();
+                        failMessage.messageType = MessageType.Connect;
+                        failMessage.messageTitle = "Error";
+                        failMessage.message.Add("That name is taken!");
+                        SendMessageToClient(failMessage);
+                    }
+                    break;
+            }
+        }
+
+        private void SendMessageToClient (ServerToClientMessage message)
+        {
+            string json = message.SaveJSON();
+            Send(json);
+        }
     }
 }
 
-[System.Serializable]
-public class MessageJSON {
-    public string name;
-    public string questionType;
-    public string[] answers;
-
-    public static MessageJSON CreateFromJSON(string json)
-    {
-        return JsonUtility.FromJson<MessageJSON>(json);
-    }
-
-    public string SaveJSON()
-    {
-        return JsonUtility.ToJson(this);
-    }
-}
 
