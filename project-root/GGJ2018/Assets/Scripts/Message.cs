@@ -19,13 +19,21 @@ namespace WritersFlock
         public MessageType messageType;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class ClientToServerMessage : Message
     {
         public string playerName;
-        public string questionType;
-        public string answers;
         public string message;
+
+        public ClientToServerMessage () { }
+
+        public ClientToServerMessage (MessageType messageType, string messageTitle, string message, string playerName)
+        {
+            this.messageType = messageType;
+            this.messageTitle = messageTitle;
+            this.message = message;
+            this.playerName = playerName;
+        }
 
         public static ClientToServerMessage CreateFromJSON (string json)
         {
@@ -38,10 +46,19 @@ namespace WritersFlock
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class ServerToClientMessage : Message
     {
         public List<string> message;
+
+        public ServerToClientMessage () { }
+
+        public ServerToClientMessage (MessageType messageType, string messageTitle, List<string> message)
+        {
+            this.messageType = messageType;
+            this.messageTitle = messageTitle;
+            this.message = message;
+        }
 
         public static ClientToServerMessage CreateFromJSON (string json)
         {

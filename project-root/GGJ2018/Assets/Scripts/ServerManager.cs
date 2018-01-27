@@ -1,22 +1,34 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
+
 namespace WritersFlock
 {
+    public struct Player
+    {
+        public string name;
+        public int playerIndex;
+        public Image playerAvatar;
+
+        public int PlayerNumber
+        {
+            get
+            {
+                return playerIndex + 1;
+            }
+        }
+    }
+
     public class ServerManager : MonoBehaviour
     {
 
         [Header("Server Config")]
-        public Text ipDisplay;
-        public int port = 9999;
-
-        private List<string> players;
-        private WebSocketServer socketConnection;
+        public List<Player> players = new List<Player>();
 
         //Singleton
         public static ServerManager instance { get; private set; }
@@ -41,64 +53,38 @@ namespace WritersFlock
         //Server Init
         private void Start ()
         {
-            socketConnection = new WebSocketServer(port);
+            var socketConnection = new WebSocketServer(1024);
             socketConnection.AddWebSocketService<MessageService>("/");
             socketConnection.Start();
             Debug.Log("Server running...");
-            //TODO: Change this shit
-            ipDisplay.text = Network.player.ipAddress;
         }
 
-        public bool AddNewPlayer(string name)
+        public IEnumerator AddNewPlayer (string name, MessageService network)
         {
-            if(players.Contains(name)) { return false; }
-            players.Add(name);
-            return true;
-        }
-        
-    }
-
-
-    public class MessageService : WebSocketBehavior
-    {
-
-        protected override void OnMessage (MessageEventArgs e)
-        {
-            Debug.Log("Recieving Message...");
-            string data = e.Data;
-            var jsonClass = ClientToServerMessage.CreateFromJSON(data);
-            ParseMessage(jsonClass);
-        }
-
-        private void ParseMessage (ClientToServerMessage message)
-        {
-            var server = ServerManager.instance;
-            switch (message.messageType)
-            {
-                case MessageType.Connect:
-                    if (server.AddNewPlayer(message.playerName))
-                    {
-                        var successMessage = new ServerToClientMessage();
-                        successMessage.messageType = MessageType.Connect;
-                        successMessage.messageTitle = "Connected";
-                        SendMessageToClient(successMessage);
-                    }
-                    else
-                    {
-                        var failMessage = new ServerToClientMessage();
-                        failMessage.messageType = MessageType.Connect;
-                        failMessage.messageTitle = "Error";
-                        failMessage.message.Add("That name is taken!");
-                        SendMessageToClient(failMessage);
-                    }
-                    break;
+            if (NameAlreadyTaken(name)) {
+                var failMessage = new ServerToClientMessage(MessageType.Connect, "Error: That name is taken.", null);
+                network.SendMessageToClient(failMessage);
+                yield break;
             }
+            var player = new Player();
+            player.name = name;
+            players.Add(player);
+            player.playerIndex = players.IndexOf(player);
+            Debug.Log("Player " + player.PlayerNumber + " '" + player.name + "' has joined the game!");
+            var lobbyManager = FindObjectOfType<LobbyManager>();
+            lobbyManager.AddNewPlayerToScreen(player);
+            var successMessage = new ServerToClientMessage(MessageType.Connect, "Connected", null);
+            network.SendMessageToClient(successMessage);
+            yield return null;
         }
 
-        private void SendMessageToClient (ServerToClientMessage message)
+        private bool NameAlreadyTaken (string name)
         {
-            string json = message.SaveJSON();
-            Send(json);
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].name == name) { return true; }
+            }
+            return false;
         }
     }
 }
