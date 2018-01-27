@@ -9,12 +9,20 @@ var testElem = document.getElementById('test');
 var questionIndex = 0
 
 var data = {
+  // player's name
   name: 'cool dude',
-  questionType: 'text',
-  answers: [
-    'nice',
-    'cool',
-    'rad'
+  // the type of data recieved
+  // can be either text or vote
+  type: 'text',
+  // which story is the player interacting with
+  storyId: 0,
+  // the text sent to the player
+  message: 'here\'s a message!',
+  // the options the player is voting between
+  voteOptions: [
+    'option 1',
+    'option 2',
+    'option 3'
   ]
 }
 
@@ -119,8 +127,14 @@ function connect() {
 }
 
 function onMessage(e) {
-  message.textContent = e.data
   data = JSON.parse(e.data)
+
+  if (data.type === 'text') {
+    message.textContent = data.message
+  } else if (data.type === 'vote') {
+    voting.displayVoteOptions(data.voteOptions)
+  }
+
   console.log('got ↓')
   console.log(data)
 }
