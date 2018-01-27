@@ -17,29 +17,33 @@
 	</header>
 
 	<section id="server-connect">
-		<div class="input-section">
-			<label>Name:</label>
-			<input type="text" name="name-entry" id="name-input" maxlength="16">
-		</div>
-		<div class="input-section">
-			<label>Server:</label>
-			<input type="text" name="server-connect" id="server-input" maxlength="15">
-		</div>
-		<div class="input-section">
-			<button id="connect-button">connect</button>
-		</div>
+		<form onsubmit="return false">
+			<fieldset class="input-section">
+				<label>Name:</label>
+				<input type="text" name="name-entry" id="name-input" maxlength="16">
+			</fieldset>
+			<fieldset class="input-section">
+				<label>Server:</label>
+				<input type="text" name="server-connect" id="server-input" maxlength="15">
+			</fieldset>
+			<fieldset class="input-section">
+				<input type="submit" name="submit" id="connect-button" value="Connect">
+			</fieldset>
+		</form>
 	</section>
 
 	<section class="voting" id="voting">
 
 	</section>
 
-	<section class="hidden" id="test">
+	<section class="hidden" id="message">
 		<div id="message"></div>
-		<div class="input-section with-button">
-			<input type="text" name="sock" id="input" maxlength="50">
-			<button id="send">send</button>
-		</div>
+		<form onsubmit="return false">
+			<fieldset class="input-section with-button">
+				<input type="text" name="sock" id="input" maxlength="50">
+				<input type="submit" name="submit" id="send" value="Submit">
+			</fieldset>
+		</form>
 	</section>
 
 	<section id="status">~ status ~</section>

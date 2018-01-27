@@ -73,7 +73,7 @@ main {
 .input-section input[type="text"] {
 	width: 100%;
 }
-.input-section button {
+.input-section button, .input-section input[type="submit"] {
 	width: 100%;
 }
 .input-section.with-button {
@@ -91,7 +91,7 @@ input[type="text"] {
 	border-radius: 6px;
 }
 
-button {
+button, input[type="submit"] {
 	font-size: 1rem;
 	padding: 0.5rem;
 	background: #5b5;

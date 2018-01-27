@@ -4,20 +4,13 @@ var message = document.getElementById('message')
 var button = document.getElementById('send')
 var statusMsg = document.getElementById('status')
 var app = document.getElementById('app')
-var testElem = document.getElementById('test')
+var testElem = document.getElementById('message')
 
 var data = {
-  // player's name
-  name: 'cool dude',
-  // the type of data recieved
-  // can be either text or vote
-  type: 'text',
-  // which story is the player interacting with
-  storyId: 0,
-  // the text sent to the player
-  message: 'here\'s a message!',
-  // the options the player is voting between
-  voteOptions: 0
+  playerName: null,
+  messageType: null,
+  message: null,
+  answers: null
 }
 
 var ipAddressRegex = /(\d){1,3}.(\d){1,3}.(\d){1,3}.(\d){1,3}/
@@ -48,7 +41,6 @@ var serverConnect = function () {
   }
 
   function init() {
-    serverInput.addEventListener('keydown', connectServer, false)
     connectButton.addEventListener('click', connectServer, false)
 
     var _ipAddress = window.localStorage.getItem('serverAddress')
@@ -61,18 +53,16 @@ var serverConnect = function () {
   init()
 
   function connectServer(e) {
-    if (e.keyCode === 13 || e.keyCode === undefined) {
-      ipAddress = serverInput.value
-      if (ipAddress.match(ipAddressRegex)) {
-        setStatus('trying to connect to ' + ipAddress + ':1024')
-        sock = new WebSocket('ws://' + ipAddress + ':1024')
-        sock.addEventListener('open', onConnect, false)
-        sock.addEventListener('message', onMessage, false)
-        sock.addEventListener('error', onError, false)
-        sock.addEventListener('close', onClose, false)
-      } else {
-        setStatus('incorrect format for ip address!')
-      }
+    ipAddress = serverInput.value
+    if (ipAddress.match(ipAddressRegex)) {
+      setStatus('trying to connect to ' + ipAddress + ':1024')
+      sock = new WebSocket('ws://' + ipAddress + ':1024')
+      sock.addEventListener('open', onConnect, false)
+      sock.addEventListener('message', onMessage, false)
+      sock.addEventListener('error', onError, false)
+      sock.addEventListener('close', onClose, false)
+    } else {
+      setStatus('incorrect format for ip address!')
     }
   }
 
@@ -105,6 +95,7 @@ var voting = function () {
   function vote(e) {
     var voteId = e.target.innerText
     console.log(voteId)
+    sendMessage(voteId)
   }
 
   return {
@@ -120,23 +111,21 @@ function setStatus(text) {
 function onMessage(e) {
   data = JSON.parse(e.data)
 
-  if (data.type === 'text') {
-    message.textContent = data.message
-  } else if (data.type === 'vote') {
-    voting.displayVoteOptions(data.voteOptions)
-  }
-
-  console.log('got ↓')
+  console.log('→ got')
   console.log(data)
 }
 
-function sendMessage() {
+function sendMessage(message) {
   data.message = input.value
+  data.messageType = 1
   sendData(data)
   clearInput(input)
 }
 
 function sendData(data) {
+  console.log('→ sent')
+  console.log(data)
+
   _data = JSON.stringify(data)
   sock.send(_data)
 }
@@ -147,11 +136,10 @@ function onConnect() {
   window.localStorage.setItem('username', serverConnect.username())
 
   serverConnect.toggleElement(false)
-  data.name = serverConnect.username().trim()
+  data.playerName = serverConnect.username().trim()
+  data.messageType = 0
 
   sendData(data)
-  console.log('sent ↓')
-  console.log(_data)
 
   testElem.classList.remove('hidden')
   setStatus('connected to server!')
