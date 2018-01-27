@@ -44,10 +44,6 @@ var serverConnect = function () {
     element.classList.toggle('hidden', !force)
   }
 
-  function clearIpInput() {
-    serverInput.value = ''
-  }
-
   function username() {
     return nameInput.value
   }
@@ -77,7 +73,7 @@ var serverConnect = function () {
 
   return {
     toggleElement: toggleElement,
-    clearIpInput: clearIpInput,
+    serverInput: serverInput,
     username: username
   }
 }()
@@ -118,8 +114,7 @@ function connect() {
   serverConnect.toggleElement(false)
   data.name = serverConnect.username()
 
-  _data = JSON.stringify(data)
-  sock.send(_data)
+  sendData(data)
   console.log('sent ↓')
   console.log(_data)
 
@@ -140,8 +135,14 @@ function onMessage(e) {
 }
 
 function sendMessage() {
-  data.answers[questionIndex] = input.value
-  sock.send(data)
+  data.message = input.value
+  sendData(data)
+  clearInput(input)
+}
+
+function sendData(data) {
+  _data = JSON.stringify(data)
+  sock.send(_data)
 }
 
 function onError(e) {
@@ -151,7 +152,7 @@ function onError(e) {
 function onClose() {
   setStatus('connection closed')
   serverConnect.toggleElement(true)
-  serverConnect.clearIpInput()
+  clearInput(serverConnect.serverInput)
 }
 
 function removeAllChildren(parent) {
@@ -159,5 +160,10 @@ function removeAllChildren(parent) {
     parent.removeChild(parent.firstChild);
   }
 }
+
+function clearInput(element) {
+  element.value = ''
+}
+
 
 
