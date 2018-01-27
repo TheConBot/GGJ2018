@@ -13,10 +13,9 @@ namespace WritersFlock
 
         [Header("Server Config")]
         public Text ipDisplay;
-        public int port = 9999;
 
         private List<string> players;
-        private WebSocketServer socketConnection;
+        // private WebSocketServer socketConnection;
 
         //Singleton
         public static ServerManager instance { get; private set; }
@@ -41,7 +40,7 @@ namespace WritersFlock
         //Server Init
         private void Start ()
         {
-            socketConnection = new WebSocketServer(port);
+            var socketConnection = new WebSocketServer(1024);
             socketConnection.AddWebSocketService<MessageService>("/");
             socketConnection.Start();
             Debug.Log("Server running...");
@@ -55,7 +54,7 @@ namespace WritersFlock
             players.Add(name);
             return true;
         }
-        
+
     }
 
 

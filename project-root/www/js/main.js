@@ -64,8 +64,8 @@ var serverConnect = function () {
     if (e.keyCode === 13 || e.keyCode === undefined) {
       ipAddress = serverInput.value
       if (ipAddress.match(ipAddressRegex)) {
-        setStatus('trying to connect')
-        sock = new WebSocket('ws://' + ipAddress + ':88')
+        setStatus('trying to connect to ' + ipAddress + ':1024')
+        sock = new WebSocket('ws://' + ipAddress + ':1024')
         sock.addEventListener('open', onConnect, false)
         sock.addEventListener('message', onMessage, false)
         sock.addEventListener('error', onError, false)
