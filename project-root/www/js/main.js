@@ -4,9 +4,7 @@ var message = document.getElementById('message')
 var button = document.getElementById('send')
 var statusMsg = document.getElementById('status')
 var app = document.getElementById('app')
-var testElem = document.getElementById('test');
-
-var questionIndex = 0
+var testElem = document.getElementById('test')
 
 var data = {
   // player's name
@@ -35,6 +33,7 @@ init()
 
 
 var serverConnect = function () {
+  var ipAddress = ''
   var element = document.getElementById('server-connect')
   var serverInput = document.getElementById('server-input')
   var nameInput = document.getElementById('name-input')
@@ -48,20 +47,30 @@ var serverConnect = function () {
     return nameInput.value
   }
 
+  function serverIp() {
+    return ipAddress
+  }
+
   function init() {
     serverInput.addEventListener('keydown', connectServer, false)
     connectButton.addEventListener('click', connectServer, false)
+
+    var _ipAddress = window.localStorage.getItem('ipAddress')
+    var _username = window.localStorage.getItem('username')
+    if (_ipAddress !== undefined) { serverInput.value = _ipAddress }
+    if (_username !== undefined) { nameInput.value = _username }
+
     console.log('server init')
   }
   init()
 
   function connectServer(e) {
     if (e.keyCode === 13 || e.keyCode === undefined) {
-      var server = serverInput.value
-      if (server.match(ipAddressRegex)) {
+      ipAddress = serverInput.value
+      if (ipAddress.match(ipAddressRegex)) {
         setStatus('trying to connect')
-        sock = new WebSocket('ws://' + server + ':9999')
-        sock.addEventListener('open', connect, false)
+        sock = new WebSocket('ws://' + ipAddress + ':9999')
+        sock.addEventListener('open', onConnect, false)
         sock.addEventListener('message', onMessage, false)
         sock.addEventListener('error', onError, false)
         sock.addEventListener('close', onClose, false)
@@ -74,7 +83,8 @@ var serverConnect = function () {
   return {
     toggleElement: toggleElement,
     serverInput: serverInput,
-    username: username
+    username: username,
+    serverIp: serverIp
   }
 }()
 
@@ -97,7 +107,8 @@ var voting = function () {
   }
 
   function vote(e) {
-    console.log(e)
+    var voteId = e.target.innerText
+    console.log(voteId)
   }
 
   return {
@@ -108,17 +119,6 @@ var voting = function () {
 function setStatus(text) {
   console.log(text)
   statusMsg.textContent = text
-}
-
-function connect() {
-  serverConnect.toggleElement(false)
-  data.name = serverConnect.username()
-
-  sendData(data)
-  console.log('sent ↓')
-  console.log(_data)
-
-  testElem.classList.remove('hidden')
 }
 
 function onMessage(e) {
@@ -145,13 +145,28 @@ function sendData(data) {
   sock.send(_data)
 }
 
+function onConnect() {
+  window.localStorage.setItem('ipAddress', serverConnect.serverIp())
+  window.localStorage.setItem('username', serverConnect.username())
+
+  serverConnect.toggleElement(false)
+  data.name = serverConnect.username().trim()
+
+  sendData(data)
+  console.log('sent ↓')
+  console.log(_data)
+
+  testElem.classList.remove('hidden')
+}
+
 function onError(e) {
-  setStatus('there was an issue connecting with this server, double check your connection and ip address');
+  setStatus('there was an issue connecting with this server, double check your connection and ip address')
 }
 
 function onClose() {
-  setStatus('connection closed')
+  setStatus('connection to server lost')
   serverConnect.toggleElement(true)
+  testElem.classList.add('hidden')
   clearInput(serverConnect.serverInput)
 }
 

@@ -46,6 +46,21 @@ main {
 	border-radius: 12px;
 }
 
+.voting ul {
+	list-style: none;
+	padding-left: 0;
+}
+
+.voting li {
+	width: 100%;
+	margin-bottom: 0.5rem;
+}
+
+.voting li button {
+	width: 100%;
+	padding: 1rem;
+}
+
 .input-section {
 	display: block;
 	padding: 0.25rem;
@@ -61,7 +76,7 @@ input[type="text"] {
 
 button {
 	font-size: 1rem;
-	padding: 0.25rem;
+	padding: 0.5rem;
 	background: #5b5;
 	border: none;
 	border-radius: 6px;
