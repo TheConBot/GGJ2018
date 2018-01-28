@@ -289,11 +289,7 @@ namespace WritersFlock
         public void StartVoting (MainManager manager)
         {
             manager.ChangeToVotingPanel();
-            foreach (Player player in players)
-            {
-                player.isReady = false;
-                player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Vote, "Select your favorite sentence from this story!", stories[manager.currentTurn].sentances));
-            }
+            ContinueVoting(manager);
         }
 
         public void ContinueVoting (MainManager manager)
@@ -301,7 +297,26 @@ namespace WritersFlock
             foreach (Player player in players)
             {
                 player.isReady = false;
-                player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Vote, "Select your favorite sentence from this story!", stories[manager.currentTurn].sentances));
+                List<string> data = new List<string>();
+                switch (manager.CurrentRound().roundNumber)
+                {
+                    case 1:
+                        data = stories[manager.currentTurn].sentances;
+                        break;
+                    case 2:
+                        foreach(Story story in stories)
+                        {
+                            data.Add(story.title);
+                        }
+                        break;
+                    case 3:
+                        foreach (Title title in titles)
+                        {
+                            data.Add(title.titleText);
+                        }
+                        break;
+                }
+                player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Vote, "Select your favorite sentence from this story!", data));
             }
             manager.currentTurn++;
         }
@@ -324,7 +339,7 @@ namespace WritersFlock
             int start = manager.currentTurn;
             foreach (Player player in players)
             {
-                if (start >= stories.Count) { start = 0; }
+                start = start % stories.Count; 
                 player.currentStory = stories[start];
                 start++;
             }
