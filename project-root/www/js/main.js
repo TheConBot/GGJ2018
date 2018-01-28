@@ -20,7 +20,7 @@ var ipAddressRegex = /(\d){1,3}.(\d){1,3}.(\d){1,3}.(\d){1,3}/
 
 function init() {
   hideAll()
-  logo.src = 'img/writersflocklogo.png'
+  logo.src = 'img/characters/char0-QUESTION.png'
   serverConnect.display()
 }
 
