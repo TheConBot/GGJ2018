@@ -14,6 +14,6 @@ MonoBehaviour:
   roundNumber: 2
   importantPlayerStarts: 1
   importantPlayerPrompt: Write the ending to the story!
-  numberOfWritingTurns: 0
+  numberOfWritingTurns: 5
   votingTurnsIsStoryCount: 0
   data: []

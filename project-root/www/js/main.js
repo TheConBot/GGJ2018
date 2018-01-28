@@ -218,6 +218,10 @@ function onMessage(e) {
 
   header.innerText = (m.messageTitle === null) ? "Writer's Flock" : m.messageTitle
 
+  if (m.numberOfWritingTurns !== null) {
+    setStatus('turn number: ' + m.numberOfWritingTurns)
+  }
+
   console.log('%c← got', 'color: #55f')
   console.log(m)
 
@@ -232,6 +236,8 @@ function onMessage(e) {
     entry.display(m.message)
   } else if (m.messageType === 2) {
     voting.display(m.message)
+  } else if (m.messageType === 6) {
+    wait.display()
   }
 
 }
