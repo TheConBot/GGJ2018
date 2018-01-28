@@ -45,6 +45,7 @@ namespace WritersFlock
                     continue;
                 }
                 groupVotingTitles[i].text = titles[i].titleText;
+                groupVotingBody[i].text = "";
             }
         }
 
