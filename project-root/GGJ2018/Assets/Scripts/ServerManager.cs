@@ -288,12 +288,37 @@ namespace WritersFlock
 
         public void StartVoting (MainManager manager)
         {
-            manager.ChangeToVotingPanel();
+            switch (manager.CurrentRound().roundNumber)
+            {
+                case 2:
+                    manager.ChangeToGroupVotingPanel(stories);
+                    break;
+                case 3:
+                    manager.ChangeToGroupVotingPanel(titles);
+                    break;
+            }
             ContinueVoting(manager);
         }
 
         public void ContinueVoting (MainManager manager)
         {
+            switch (manager.CurrentRound().roundNumber)
+            {
+                case 1:
+                    string body = "";
+                    var sentances = stories[manager.currentTurn].sentances;
+                    for (int i = 0; i < sentances.Count; i++)
+                    {
+                        body += sentances[i] + " ";
+                    }
+                    manager.AdvanceSingleVotingPanel(stories[manager.currentTurn].title, body);
+                    break;
+
+            }
+
+            if (manager.CurrentRound().roundNumber == 1)
+            {
+            }
             foreach (Player player in players)
             {
                 player.isReady = false;
