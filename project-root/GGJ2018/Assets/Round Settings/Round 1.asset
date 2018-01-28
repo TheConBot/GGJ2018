@@ -15,5 +15,5 @@ MonoBehaviour:
   importantPlayerStarts: 1
   importantPlayerPrompt: Write the first sentence of the story!
   numberOfWritingTurns: 5
-  votingTurnsIsStoryCount: 0
+  votingTurnsIsStoryCount: 1
   data: []

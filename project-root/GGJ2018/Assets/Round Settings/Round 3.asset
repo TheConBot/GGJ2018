@@ -13,6 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roundNumber: 3
   importantPlayerStarts: 0
-  numberOfWritingRounds: 1
-  votingRoundsIsDataCount: 0
+  importantPlayerPrompt: 
+  numberOfWritingTurns: 0
+  votingTurnsIsStoryCount: 0
   data: []
