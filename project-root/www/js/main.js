@@ -5,6 +5,7 @@ var logo = document.getElementById('logo')
 var app = document.getElementById('app')
 var title = ''
 var currentRound;
+var totalrounds;
 var round;
 var playerIcon;
 
@@ -266,11 +267,6 @@ function onMessage(e) {
   m = JSON.parse(e.data)
 
   header.innerText = (m.messageTitle === null) ? title : m.messageTitle
-  currentRound++;
-
-  if (m.numberOfWritingRounds !== null) {
-    setStatus('Rounds left: ' + (m.numberOfWritingRounds - currentRound))
-  }
 
   console.log('%c← got', 'color: #55f')
   console.log(m)
@@ -278,7 +274,7 @@ function onMessage(e) {
   if (m.messageType === 0) {
     setStatus('connected to game!')
     sentenceRound = true
-    currentRound = 0;
+    currentRound = 0
     playerIcon = m.message[0]
     logo.src = 'img/characters/' + playerIcon + '.png'
     if (m.message.includes('host')) {
@@ -287,9 +283,18 @@ function onMessage(e) {
       wait.display()
     }
   } else if (m.messageType === 1) {
+    currentRound++
+
+    if (m.numberOfWritingRounds !== null && m.numberOfWritingRounds !== 0) {
+      totalrounds = m.numberOfWritingRounds
+    }
+    // setStatus('Rounds left: ' + (totalrounds - currentRound))
+    setStatus('')
+
     entry.display(m.message)
   } else if (m.messageType === 2) {
     round = ''
+    currentRound = 0
     if (m.message[0] === 'Once upon a time...') {
       voting.display(m.message, 2)
     } else {
