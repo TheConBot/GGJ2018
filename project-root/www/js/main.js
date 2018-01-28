@@ -3,6 +3,7 @@ var statusMsg = document.getElementById('status')
 var header = document.getElementById('header')
 var app = document.getElementById('app')
 var title = 'Writer\'s Flock'
+var currentRound;
 
 var sentenceRound = false;
 
@@ -224,9 +225,10 @@ function onMessage(e) {
   m = JSON.parse(e.data)
 
   header.innerText = (m.messageTitle === null) ? title : m.messageTitle
+  currentRound++;
 
   if (m.numberOfWritingRounds !== null) {
-    setStatus('turn number: ' + m.numberOfWritingRounds)
+    setStatus('Rounds left: ' + (m.numberOfWritingRounds - currentRound))
   }
 
   console.log('%c← got', 'color: #55f')
@@ -235,6 +237,7 @@ function onMessage(e) {
   if (m.messageType === 0) {
     setStatus('connected to game!')
     sentenceRound = true
+    currentRound = 0;
     if (m.message[0] === 'host') {
       host.display()
     } else {
