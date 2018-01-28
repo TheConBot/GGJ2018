@@ -276,7 +276,7 @@ function onMessage(e) {
     sentenceRound = true
     currentRound = 0;
     playerIcon = m.message[0]
-    logo.src = playerIcon
+    logo.src = 'img/characters/' + playerIcon + '.png'
     if (m.message.includes('host')) {
       host.display()
     } else {
