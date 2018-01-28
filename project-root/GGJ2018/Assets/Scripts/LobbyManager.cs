@@ -11,8 +11,48 @@ namespace WritersFlock
         public Text serverAddressText;
         public List<GameObject> playerPanels;
 
+        public GameObject joinPanel;
+        public GameObject resultsPanel;
+        public Text bestStoryTitleText;
+        public Text bestStoryBodyText;
+        public Text featuredAuthorText;
+        public Image featuresAuthorImage;
+
         [SerializeField] List<Sprite> characters;
         List<Sprite> shuffledCharacters;
+
+        public void Awake ()
+        {
+            CheckLobbyScreenState();
+        }
+
+        public void CheckLobbyScreenState ()
+        {
+            if (ServerManager.instance.isPlaying)
+            {
+                joinPanel.SetActive(false);
+                resultsPanel.SetActive(true);
+            }
+            else
+            {
+                joinPanel.SetActive(false);
+                resultsPanel.SetActive(true);
+            }
+        }
+
+        public void DisplayResults(Story chosenStory, Player chosenPlayer)
+        {
+            bestStoryTitleText.text = chosenStory.title;
+            string body = "";
+            var sentances = chosenStory.sentances;
+            for (int j = 0; j < sentances.Count; j++)
+            {
+                body += sentances[j] + " ";
+            }
+            bestStoryBodyText.text = body;
+            featuredAuthorText.text = "Featured Author:\n" + chosenPlayer.name;
+            featuresAuthorImage.sprite = chosenPlayer.playerAvatar;
+        }
 
         public void Start ()
         {
@@ -28,8 +68,6 @@ namespace WritersFlock
             playerPanels[index].GetComponentInChildren<Image>().sprite = shuffledCharacters[index];
             player.playerAvatar = shuffledCharacters[index];
         }
-
-
 
     }
     static class Extensions {

@@ -18,6 +18,7 @@ namespace WritersFlock
         public List<Story> stories = new List<Story>();
         public List<Title> titles = new List<Title>();
         private Player importantPlayer;
+        private Story selectedStory;
 
         //Singleton
         public static ServerManager instance { get; private set; }
@@ -94,7 +95,7 @@ namespace WritersFlock
         public IEnumerator StartGame (string playerName)
         {
             var player = GetPlayerByName(playerName);
-            player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Ready, "Starting Game!", null));
+            player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Ready, "Starting Game", null));
             //Load main scene and set server to be playing
             SceneManager.LoadScene(1);
             isPlaying = true;
@@ -127,8 +128,8 @@ namespace WritersFlock
                 {
                     player.currentStory.sentances.Add(message);
                     player.playerSentances.Add(message);
-                    player.isReady = true;
                 }
+                player.isReady = true;
             }
 
             if (AllPlayersAreReady())
@@ -184,6 +185,15 @@ namespace WritersFlock
                 }
                 if (AllPlayersAreReady())
                 {
+                    int points = 0;
+                    foreach(Story story in stories)
+                    {
+                        if(story.points > points)
+                        {
+                            selectedStory = story;
+                            points = selectedStory.points;
+                        }
+                    }
                     NextRound(manager);
                     yield break;
                 }
@@ -200,6 +210,15 @@ namespace WritersFlock
                 }
                 if (AllPlayersAreReady())
                 {
+                    int points = 0;
+                    foreach (Title title in titles)
+                    {
+                        if (title.points > points)
+                        {
+                            selectedStory.title = title.titleText;
+                            points = title.points;
+                        }
+                    }
                     NextRound(manager);
                     yield break;
                 }
@@ -228,7 +247,35 @@ namespace WritersFlock
 
         public void ShowResults ()
         {
+            Debug.Log("Show those Results bany");
             //Switch back to the lobby scene and display the results with the options to replay or start a fresh game
+            SceneManager.LoadScene(0);
+        }
+
+        public IEnumerator ClearGameData (bool restart)
+        {
+            stories = new List<Story>();
+            titles = new List<Title>();
+            selectedStory = null;
+            if (restart)
+            {
+                foreach (Player player in players)
+                {
+                    if (player.isHost)
+                    {
+                        importantPlayer = player;
+                    }
+                }
+                StartCoroutine(StartGame(importantPlayer.name));
+            }
+            else
+            {
+                players = new List<Player>();
+                importantPlayer = null;
+                isPlaying = false;
+                FindObjectOfType<LobbyManager>().CheckLobbyScreenState();
+            }
+            yield return null;
         }
 
         public void StartWritingRound (MainManager manager)
@@ -240,6 +287,18 @@ namespace WritersFlock
             //Starts of Round 1 and 2
             if (manager.CurrentRound().importantPlayerStarts)
             {
+                if(manager.CurrentRound().roundNumber == 2)
+                {
+                    int points = 0;
+                    foreach (Player player in players)
+                    {
+                        if (player.points > points)
+                        {
+                            importantPlayer = player;
+                            points = player.points;
+                        }
+                    }
+                }
                 importantPlayer.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Entry, manager.CurrentRound().importantPlayerPrompt, importantPlayer.currentStory.sentances));
                 foreach(Player player in players)
                 {
@@ -290,6 +349,9 @@ namespace WritersFlock
         {
             switch (manager.CurrentRound().roundNumber)
             {
+                case 1:
+                    manager.ChangeToSingleVotingPanel();
+                    break;
                 case 2:
                     manager.ChangeToGroupVotingPanel(stories);
                     break;
@@ -316,9 +378,6 @@ namespace WritersFlock
 
             }
 
-            if (manager.CurrentRound().roundNumber == 1)
-            {
-            }
             foreach (Player player in players)
             {
                 player.isReady = false;
@@ -341,7 +400,22 @@ namespace WritersFlock
                         }
                         break;
                 }
-                player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Vote, "Select your favorite sentence from this story!", data));
+
+                string message = "";
+                switch (manager.CurrentRound().roundNumber)
+                {
+                    case 1:
+                        message = "Select your favorite sentence from this story!";
+                        break;
+                    case 2:
+                        message = "Select your favorite story!";
+                        break;
+                    case 3:
+                        message = "Select your favorite title!";
+                        break;
+                }
+
+                player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Vote, message, data));
             }
             manager.currentTurn++;
         }
