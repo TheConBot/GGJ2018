@@ -142,7 +142,10 @@ var entry = function () {
   }
 
   function sendMessage(message) {
-    if (input.value.length > 0) {
+    var m = input.value
+    m = m.trim()
+    m = m.replace(/\s\s+/g, ' ')
+    if (m.length > 0) {
       data.message = input.value
       data.messageType = 1
       sendData(data)
