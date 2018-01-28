@@ -81,11 +81,11 @@ var voting = function () {
   var element = document.getElementById('voting')
 
   function display(options) {
-    console.log(element)
     element.classList.remove('hidden')
     removeAllChildren(element)
     var ul = document.createElement('ul')
-    for (var i = 0; i < options.length; i++) {
+    // skip first entry, which will always be the intro sentence
+    for (var i = 1; i < options.length; i++) {
       var li = document.createElement('li')
       var btn = document.createElement('button')
       btn.textContent = options[i]
@@ -140,12 +140,14 @@ var entry = function () {
   }
 
   function sendMessage(message) {
-    data.message = input.value
-    data.messageType = 1
-    sendData(data)
-    clearInput(input)
-    hideAll()
-    wait.display('waiting for all other players')
+    if (input.value.length > 0) {
+      data.message = input.value
+      data.messageType = 1
+      sendData(data)
+      clearInput(input)
+      hideAll()
+      wait.display('waiting for all other players')
+    }
   }
 
   return {
@@ -158,7 +160,7 @@ var wait = function () {
   var element = document.getElementById('wait')
 
   function display(message) {
-    element.textContent = message
+    // element.textContent = message
     element.classList.remove('hidden')
   }
 
