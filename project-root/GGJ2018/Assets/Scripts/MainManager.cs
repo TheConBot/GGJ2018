@@ -9,6 +9,8 @@ namespace WritersFlock
 {
     public class MainManager : MonoBehaviour
     {
+        public AudioSource audioSource;
+        public List<AudioClip> music;
         public GameObject writingPanel;
         public GameObject votingPanel;
         public List<RoundSettings> rounds;

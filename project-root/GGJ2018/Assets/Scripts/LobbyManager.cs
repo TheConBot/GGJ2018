@@ -8,6 +8,8 @@ namespace WritersFlock
     public class LobbyManager : MonoBehaviour
     {
 
+        public List<AudioClip> music;
+
         public Text serverAddressText;
         public List<GameObject> playerPanels;
 

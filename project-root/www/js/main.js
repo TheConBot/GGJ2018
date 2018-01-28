@@ -2,6 +2,7 @@ var sock;
 var statusMsg = document.getElementById('status')
 var header = document.getElementById('header')
 var app = document.getElementById('app')
+var title = 'Writer\'s Flock'
 
 var sentenceRound = false;
 
@@ -50,6 +51,8 @@ var serverConnect = function () {
     if (_ipAddress !== undefined) { serverInput.value = _ipAddress }
     if (_username !== undefined) { nameInput.value = _username }
 
+    header.innerText = title
+
     console.log('server init')
   }
   init()
@@ -86,8 +89,7 @@ var voting = function () {
     element.classList.remove('hidden')
     removeAllChildren(element)
     var ul = document.createElement('ul')
-    // skip first entry, which will always be the intro sentence
-    for (var i = 1; i < options.length; i++) {
+    for (var i = 0; i < options.length; i++) {
       var li = document.createElement('li')
       var btn = document.createElement('button')
       btn.textContent = options[i]
@@ -146,7 +148,7 @@ var entry = function () {
     m = m.trim()
     m = m.replace(/\s\s+/g, ' ')
     if (m.length > 0) {
-      data.message = input.value
+      data.message = m
       data.messageType = 1
       sendData(data)
       clearInput(input)
@@ -221,7 +223,7 @@ function onMessage(e) {
   hideAll()
   m = JSON.parse(e.data)
 
-  header.innerText = (m.messageTitle === null) ? "Writer's Flock" : m.messageTitle
+  header.innerText = (m.messageTitle === null) ? title : m.messageTitle
 
   if (m.numberOfWritingRounds !== null) {
     setStatus('turn number: ' + m.numberOfWritingRounds)
@@ -241,9 +243,8 @@ function onMessage(e) {
   } else if (m.messageType === 1) {
     entry.display(m.message)
   } else if (m.messageType === 2) {
-    if (sentenceRound) {
-      voting.display(m.message.splice(0,2))
-      sentenceRound = false
+    if (m.message[0] === 'Once upon a time...') {
+      voting.display(m.message.slice(2))
     } else {
       voting.display(m.message)
     }
