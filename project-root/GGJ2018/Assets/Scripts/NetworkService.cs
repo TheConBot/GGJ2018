@@ -38,6 +38,14 @@ namespace WritersFlock
                     Debug.Log("Starting game!");
                     UnityMainThreadDispatcher.Instance().Enqueue(ServerManager.instance.StartGame(message.playerName));
                     break;
+                case MessageType.Entry:
+                    Debug.Log("Recieved entry from " + message.playerName);
+                    UnityMainThreadDispatcher.Instance().Enqueue(ServerManager.instance.RecievedEntry(message.playerName, message.message));
+                    break;
+                case MessageType.Vote:
+                    Debug.Log("Recieved a vote from " + message.playerName);
+                    UnityMainThreadDispatcher.Instance().Enqueue(ServerManager.instance.RecievedVote(message.playerName, message.message));
+                    break;
             }
         }
 

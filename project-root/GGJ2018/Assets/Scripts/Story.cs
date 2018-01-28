@@ -8,9 +8,25 @@ namespace WritersFlock
 {
     public class Story
     {
+        public Story ()
+        {
+            title = "Blank Story";
+            sentances = new List<string>();
+        }
+
         public string title;
-        public string startingPrefix;
+        public int points;
         public List<string> sentances;
-        public Dictionary<string, int> sentanceVotes;
+    }
+
+    public class Title
+    {
+        public Title (string title)
+        {
+            titleText = title;
+        }
+
+        public string titleText;
+        public int points;
     }
 }
