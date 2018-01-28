@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using WebSocketSharp;
 using WebSocketSharp.Server;
 using UnityEngine.SceneManagement;
 
@@ -16,9 +14,9 @@ namespace WritersFlock
         [Header("Server Config")]
         public bool isPlaying = false;
 
-        private List<Player> players = new List<Player>();
-        private List<Story> stories = new List<Story>();
-        private List<Title> titles = new List<Title>();
+        public List<Player> players = new List<Player>();
+        public List<Story> stories = new List<Story>();
+        public List<Title> titles = new List<Title>();
         private Player importantPlayer;
 
         //Singleton
@@ -145,26 +143,66 @@ namespace WritersFlock
             var manager = FindObjectOfType<MainManager>();
             var player = GetPlayerByName(playerName);
 
-            if (manager.CurrentRound().votingTurnsIsStoryCount && manager.currentTurn < stories.Count)
+            player.isReady = true;
+
+            if (manager.CurrentRound().roundNumber == 1)
             {
-                for (int i = 0; i < players.Count; i++)
+                if(manager.currentTurn < stories.Count)
                 {
-                    if (players[i].playerSentances.Contains(message))
+                    for (int i = 0; i < players.Count; i++)
                     {
-                        players[i].points++;
+                        if (players[i].playerSentances.Contains(message))
+                        {
+                            players[i].points++;
+                            break;
+                        }
+                    }
+                    if (AllPlayersAreReady())
+                    {
+                        ContinueVoting(manager);
+                        yield break;
+                    }
+                }
+                else
+                {
+                    if (AllPlayersAreReady())
+                    {
+                        NextRound(manager);
+                        yield break;
+                    }
+                }
+            }
+            else if (manager.CurrentRound().roundNumber == 2)
+            {
+                foreach(Story story in stories)
+                {
+                    if(story.title == message)
+                    {
+                        story.points++;
                         break;
                     }
                 }
-                player.isReady = true;
                 if (AllPlayersAreReady())
                 {
-                    ContinueVoting(manager);
+                    NextRound(manager);
                     yield break;
                 }
             }
             else
             {
-                NextRound(manager);
+                foreach(Title title in titles)
+                {
+                    if(title.titleText == message)
+                    {
+                        title.points++;
+                        break;
+                    }
+                }
+                if (AllPlayersAreReady())
+                {
+                    NextRound(manager);
+                    yield break;
+                }
             }
             yield return null;
         }
@@ -243,11 +281,11 @@ namespace WritersFlock
 
         public void ContinueVoting (MainManager manager)
         {
-            manager.currentTurn++;
             foreach (Player player in players)
             {
                 player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Vote, "Select your favorite sentence from this story!", stories[manager.currentTurn].sentances));
             }
+            manager.currentTurn++;
         }
 
         private void GenerateStories (string startingLine, MainManager manager)

@@ -17,7 +17,6 @@ namespace WritersFlock
         {
             string data = e.Data;
             var jsonClass = ClientToServerMessage.CreateFromJSON(data);
-            Debug.Log("Recieving Message of type: " + jsonClass.messageType);
             ParseMessage(jsonClass);
         }
 

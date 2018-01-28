@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace WritersFlock
 {
+    [Serializable]
     public class Story
     {
         public Story ()
@@ -19,6 +20,7 @@ namespace WritersFlock
         public List<string> sentances;
     }
 
+    [Serializable]
     public class Title
     {
         public Title (string title)

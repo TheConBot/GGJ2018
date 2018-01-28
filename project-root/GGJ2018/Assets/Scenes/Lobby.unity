@@ -816,7 +816,15 @@ MonoBehaviour:
   - {fileID: 495953704}
   - {fileID: 1730786501}
   - {fileID: 620157216}
-  characters: []
+  characters:
+  - {fileID: 21300000, guid: 2ad1c50bcb3f34268ab851492be1c5c8, type: 3}
+  - {fileID: 21300000, guid: 9f2d09d3cc47e38458b36fe426e886d4, type: 3}
+  - {fileID: 21300000, guid: ce2d633afd97e493b94df0056becf1a7, type: 3}
+  - {fileID: 21300000, guid: a5e34af63215440a19204ceb3050ae7d, type: 3}
+  - {fileID: 21300000, guid: 0b4f5aabb2df0407daf8732de53ba7c1, type: 3}
+  - {fileID: 21300000, guid: c95fa7a0a84ca4838ada60b791b01d43, type: 3}
+  - {fileID: 21300000, guid: 1064a730bf43049a39f3215831560717, type: 3}
+  - {fileID: 21300000, guid: 882f9ca2c7a2a485f97b3b3a117138d4, type: 3}
 --- !u!4 &540807602
 Transform:
   m_ObjectHideFlags: 0
@@ -1851,5 +1859,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6736cc0f62861ad4abe998e4d81b3a7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  players: []
   isPlaying: 0
