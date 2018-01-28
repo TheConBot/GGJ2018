@@ -5,34 +5,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using WebSocketSharp;
 using WebSocketSharp.Server;
+using UnityEngine.SceneManagement;
 
 
 namespace WritersFlock
 {
-    public struct Player
-    {
-        public Player(string name, int index, Sprite avatar, NetworkService network)
-        {
-            this.name = name;
-            this.playerIndex = index;
-            this.playerAvatar = avatar;
-            this.networkService = network;
-        }
-
-        public string name;
-        public int playerIndex;
-        public Sprite playerAvatar;
-        public NetworkService networkService;
-        public bool isHost;
-        public int PlayerNumber
-        {
-            get
-            {
-                return playerIndex + 1;
-            }
-        }
-    }
-
     public class ServerManager : MonoBehaviour
     {
 
@@ -72,7 +49,7 @@ namespace WritersFlock
         public IEnumerator AddNewPlayer (string name, NetworkService network)
         {
             //Each client gets a their own instance of Message Service, which means the SendDatatoClient method is reliant on the object instance (aka keep your players and their messageservices in order)
-            if (NameAlreadyTaken(name))
+            if (GetPlayerByName(name) != null)
             {
                 if (isPlaying)
                 {
@@ -98,25 +75,61 @@ namespace WritersFlock
             var player = new Player(name, players.Count, null, network);
             players.Add(player);
             Debug.Log("Player " + player.PlayerNumber + " '" + player.name + "' has joined the game!");
+
             var lobbyManager = FindObjectOfType<LobbyManager>();
             lobbyManager.AddNewPlayerToScreen(player);
+
             var successMessage = new ServerToClientMessage(MessageType.Connect, "Connected", null);
             if(players.Count == 1)
             {
                 player.isHost = true;
                 successMessage.message = new List<string> { "host" };
             }
-            network.SendMessageToClient(successMessage);
+            player.networkService.SendMessageToClient(successMessage);
             yield return null;
         }
 
-        private bool NameAlreadyTaken (string name)
+        public IEnumerator StartGame (string playerName)
+        {
+            var player = GetPlayerByName(playerName);
+            player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Ready, "Starting Game!", null));
+            SceneManager.LoadScene(1);
+            yield return null;
+        }
+
+        private Player GetPlayerByName (string name)
         {
             for (int i = 0; i < players.Count; i++)
             {
-                if (players[i].name == name) { return true; }
+                if (players[i].name == name) { return players[i]; }
             }
-            return false;
+            return null;
+        }
+    }
+
+    [Serializable]
+    public class Player
+    {
+        public Player (string name, int index, Sprite avatar, NetworkService network)
+        {
+            this.name = name;
+            this.playerIndex = index;
+            this.playerAvatar = avatar;
+            this.networkService = network;
+            this.isHost = false;
+        }
+
+        public string name;
+        public int playerIndex;
+        public Sprite playerAvatar;
+        public NetworkService networkService;
+        public bool isHost;
+        public int PlayerNumber
+        {
+            get
+            {
+                return playerIndex + 1;
+            }
         }
     }
 }

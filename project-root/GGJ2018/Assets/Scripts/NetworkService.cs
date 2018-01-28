@@ -34,6 +34,10 @@ namespace WritersFlock
                     Debug.Log("Trying to connect a player.");
                     UnityMainThreadDispatcher.Instance().Enqueue(ServerManager.instance.AddNewPlayer(message.playerName, this));
                     break;
+                case MessageType.Ready:
+                    Debug.Log("Starting game!");
+                    UnityMainThreadDispatcher.Instance().Enqueue(ServerManager.instance.StartGame(message.playerName));
+                    break;
             }
         }
 
