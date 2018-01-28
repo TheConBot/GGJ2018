@@ -209,6 +209,10 @@ namespace WritersFlock
 
         public void NextRound (MainManager manager)
         {
+            foreach (Player player in players)
+            {
+                player.isReady = false;
+            }
             if (manager.roundIndex > manager.rounds.Count)
             {
                 ShowResults();
@@ -237,6 +241,14 @@ namespace WritersFlock
             if (manager.CurrentRound().importantPlayerStarts)
             {
                 importantPlayer.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Entry, manager.CurrentRound().importantPlayerPrompt, importantPlayer.currentStory.sentances));
+                foreach(Player player in players)
+                {
+                    if(importantPlayer == player) { continue; }
+                    if(manager.CurrentRound().roundNumber == 1)
+                        player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Wait, "Wait for someone to write the start of the stories!", null, manager.CurrentRound().numberOfWritingTurns));
+                    else if(manager.CurrentRound().roundNumber == 2)
+                        player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Wait, "Wait for someone to write the ending!", null, manager.CurrentRound().numberOfWritingTurns));
+                }
             }
             //Final Round
             else
@@ -250,6 +262,10 @@ namespace WritersFlock
 
         public void ContinueWritingRound (MainManager manager)
         {
+            foreach(Player player in players)
+            {
+                player.isReady = false;
+            }
             //Move onto voting phase here
             if (manager.currentTurn >= manager.CurrentRound().numberOfWritingTurns)
             {
@@ -275,6 +291,7 @@ namespace WritersFlock
             manager.ChangeToVotingPanel();
             foreach (Player player in players)
             {
+                player.isReady = false;
                 player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Vote, "Select your favorite sentence from this story!", stories[manager.currentTurn].sentances));
             }
         }
@@ -283,6 +300,7 @@ namespace WritersFlock
         {
             foreach (Player player in players)
             {
+                player.isReady = false;
                 player.networkService.SendMessageToClient(new ServerToClientMessage(MessageType.Vote, "Select your favorite sentence from this story!", stories[manager.currentTurn].sentances));
             }
             manager.currentTurn++;

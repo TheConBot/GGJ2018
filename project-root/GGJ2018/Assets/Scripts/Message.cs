@@ -11,7 +11,8 @@ namespace WritersFlock
         Vote,
         Restart,
         Quit,
-        Ready
+        Ready,
+        Wait
     }
 
     public class Message
@@ -51,6 +52,7 @@ namespace WritersFlock
     public class ServerToClientMessage : Message
     {
         public List<string> message;
+        public int numberOfWritingRounds;
 
         public ServerToClientMessage () { }
 
@@ -59,6 +61,14 @@ namespace WritersFlock
             this.messageType = messageType;
             this.messageTitle = messageTitle;
             this.message = message;
+        }
+
+        public ServerToClientMessage (MessageType messageType, string messageTitle, List<string> message, int rounds)
+        {
+            this.messageType = messageType;
+            this.messageTitle = messageTitle;
+            this.message = message;
+            this.numberOfWritingRounds = rounds;
         }
 
         public static ClientToServerMessage CreateFromJSON (string json)
