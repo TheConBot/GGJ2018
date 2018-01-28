@@ -10,7 +10,8 @@ namespace WritersFlock
         Entry,
         Vote,
         Restart,
-        Quit
+        Quit,
+        Ready
     }
 
     public class Message

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace WritersFlock
 {
-    public class MessageService : WebSocketBehavior
+    public class NetworkService : WebSocketBehavior
     {
 
         protected override void OnMessage (MessageEventArgs e)
@@ -19,6 +19,11 @@ namespace WritersFlock
             var jsonClass = ClientToServerMessage.CreateFromJSON(data);
             Debug.Log("Recieving Message of type: " + jsonClass.messageType);
             ParseMessage(jsonClass);
+        }
+
+        protected override void OnClose (CloseEventArgs e)
+        {
+            Debug.Log(e.Reason);
         }
 
         private void ParseMessage (ClientToServerMessage message)

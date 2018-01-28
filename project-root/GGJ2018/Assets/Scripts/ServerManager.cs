@@ -11,10 +11,19 @@ namespace WritersFlock
 {
     public struct Player
     {
+        public Player(string name, int index, Sprite avatar, NetworkService network)
+        {
+            this.name = name;
+            this.playerIndex = index;
+            this.playerAvatar = avatar;
+            this.networkService = network;
+        }
+
         public string name;
         public int playerIndex;
-        public Image playerAvatar;
-
+        public Sprite playerAvatar;
+        public NetworkService networkService;
+        public bool isHost;
         public int PlayerNumber
         {
             get
@@ -29,6 +38,7 @@ namespace WritersFlock
 
         [Header("Server Config")]
         public List<Player> players = new List<Player>();
+        public bool isPlaying = false;
 
         //Singleton
         public static ServerManager instance { get; private set; }
@@ -54,26 +64,48 @@ namespace WritersFlock
         private void Start ()
         {
             var socketConnection = new WebSocketServer(1024);
-            socketConnection.AddWebSocketService<MessageService>("/");
+            socketConnection.AddWebSocketService<NetworkService>("/");
             socketConnection.Start();
             Debug.Log("Server running...");
         }
 
-        public IEnumerator AddNewPlayer (string name, MessageService network)
+        public IEnumerator AddNewPlayer (string name, NetworkService network)
         {
-            if (NameAlreadyTaken(name)) {
-                var failMessage = new ServerToClientMessage(MessageType.Connect, "Error: That name is taken.", null);
-                network.SendMessageToClient(failMessage);
+            //Each client gets a their own instance of Message Service, which means the SendDatatoClient method is reliant on the object instance (aka keep your players and their messageservices in order)
+            if (NameAlreadyTaken(name))
+            {
+                if (isPlaying)
+                {
+                    for (int i = 0; i < players.Count; i++)
+                    {
+                        if (players[i].name == name)
+                        {
+                            players[i] = new Player(players[i].name, i, players[i].playerAvatar, network);
+                            //May want to put data for loading back into the game in the args here
+                            var reconnect = new ServerToClientMessage(MessageType.Connect, "Reconnected", null);
+                            network.SendMessageToClient(reconnect);
+                        }
+                    }
+                }
+                else
+                {
+                    var failMessage = new ServerToClientMessage(MessageType.Connect, "Error: That name is taken.", null);
+                    network.SendMessageToClient(failMessage);
+                }
                 yield break;
             }
-            var player = new Player();
-            player.name = name;
+
+            var player = new Player(name, players.Count, null, network);
             players.Add(player);
-            player.playerIndex = players.IndexOf(player);
             Debug.Log("Player " + player.PlayerNumber + " '" + player.name + "' has joined the game!");
             var lobbyManager = FindObjectOfType<LobbyManager>();
             lobbyManager.AddNewPlayerToScreen(player);
             var successMessage = new ServerToClientMessage(MessageType.Connect, "Connected", null);
+            if(players.Count == 1)
+            {
+                player.isHost = true;
+                successMessage.message = new List<string> { "host" };
+            }
             network.SendMessageToClient(successMessage);
             yield return null;
         }

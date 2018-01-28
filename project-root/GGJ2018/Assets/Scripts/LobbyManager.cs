@@ -13,7 +13,7 @@ namespace WritersFlock
 
         public void Start ()
         {
-            serverAddressText.text = Network.player.ipAddress;
+            serverAddressText.text = "Server Address: " + Network.player.ipAddress;
         }
 
         public void AddNewPlayerToScreen (Player player)
