@@ -240,7 +240,7 @@ var host = function () {
   function quitGame() {
     data.messageType = 4
     sendData(data)
-    hideAll()
+    init()
   }
 
   return {
