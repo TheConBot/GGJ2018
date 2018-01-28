@@ -1,21 +1,44 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
+
 namespace WritersFlock
 {
+    public struct Player
+    {
+        public Player(string name, int index, Sprite avatar, NetworkService network)
+        {
+            this.name = name;
+            this.playerIndex = index;
+            this.playerAvatar = avatar;
+            this.networkService = network;
+        }
+
+        public string name;
+        public int playerIndex;
+        public Sprite playerAvatar;
+        public NetworkService networkService;
+        public bool isHost;
+        public int PlayerNumber
+        {
+            get
+            {
+                return playerIndex + 1;
+            }
+        }
+    }
+
     public class ServerManager : MonoBehaviour
     {
 
         [Header("Server Config")]
-        public Text ipDisplay;
-
-        private List<string> players;
-        // private WebSocketServer socketConnection;
+        public List<Player> players = new List<Player>();
+        public bool isPlaying = false;
 
         //Singleton
         public static ServerManager instance { get; private set; }
@@ -41,63 +64,59 @@ namespace WritersFlock
         private void Start ()
         {
             var socketConnection = new WebSocketServer(1024);
-            socketConnection.AddWebSocketService<MessageService>("/");
+            socketConnection.AddWebSocketService<NetworkService>("/");
             socketConnection.Start();
             Debug.Log("Server running...");
-            //TODO: Change this shit
-            ipDisplay.text = Network.player.ipAddress;
         }
 
-        public bool AddNewPlayer(string name)
+        public IEnumerator AddNewPlayer (string name, NetworkService network)
         {
-            if(players.Contains(name)) { return false; }
-            players.Add(name);
-            return true;
-        }
-
-    }
-
-
-    public class MessageService : WebSocketBehavior
-    {
-
-        protected override void OnMessage (MessageEventArgs e)
-        {
-            Debug.Log("Recieving Message...");
-            string data = e.Data;
-            var jsonClass = ClientToServerMessage.CreateFromJSON(data);
-            ParseMessage(jsonClass);
-        }
-
-        private void ParseMessage (ClientToServerMessage message)
-        {
-            var server = ServerManager.instance;
-            switch (message.messageType)
+            //Each client gets a their own instance of Message Service, which means the SendDatatoClient method is reliant on the object instance (aka keep your players and their messageservices in order)
+            if (NameAlreadyTaken(name))
             {
-                case MessageType.Connect:
-                    if (server.AddNewPlayer(message.playerName))
+                if (isPlaying)
+                {
+                    for (int i = 0; i < players.Count; i++)
                     {
-                        var successMessage = new ServerToClientMessage();
-                        successMessage.messageType = MessageType.Connect;
-                        successMessage.messageTitle = "Connected";
-                        SendMessageToClient(successMessage);
+                        if (players[i].name == name)
+                        {
+                            players[i] = new Player(players[i].name, i, players[i].playerAvatar, network);
+                            //May want to put data for loading back into the game in the args here
+                            var reconnect = new ServerToClientMessage(MessageType.Connect, "Reconnected", null);
+                            network.SendMessageToClient(reconnect);
+                        }
                     }
-                    else
-                    {
-                        var failMessage = new ServerToClientMessage();
-                        failMessage.messageType = MessageType.Connect;
-                        failMessage.messageTitle = "Error";
-                        failMessage.message.Add("That name is taken!");
-                        SendMessageToClient(failMessage);
-                    }
-                    break;
+                }
+                else
+                {
+                    var failMessage = new ServerToClientMessage(MessageType.Connect, "Error: That name is taken.", null);
+                    network.SendMessageToClient(failMessage);
+                }
+                yield break;
             }
+
+            var player = new Player(name, players.Count, null, network);
+            players.Add(player);
+            Debug.Log("Player " + player.PlayerNumber + " '" + player.name + "' has joined the game!");
+            var lobbyManager = FindObjectOfType<LobbyManager>();
+            lobbyManager.AddNewPlayerToScreen(player);
+            var successMessage = new ServerToClientMessage(MessageType.Connect, "Connected", null);
+            if(players.Count == 1)
+            {
+                player.isHost = true;
+                successMessage.message = new List<string> { "host" };
+            }
+            network.SendMessageToClient(successMessage);
+            yield return null;
         }
 
-        private void SendMessageToClient (ServerToClientMessage message)
+        private bool NameAlreadyTaken (string name)
         {
-            string json = message.SaveJSON();
-            Send(json);
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].name == name) { return true; }
+            }
+            return false;
         }
     }
 }
