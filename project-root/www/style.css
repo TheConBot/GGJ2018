@@ -100,6 +100,10 @@ button, input[type="submit"] {
 	color: #fff;
 }
 
+button[disabled], input[type="submit"][disabled] {
+	background: #595;
+}
+
 section {
 	margin-bottom: 2rem;
 }
@@ -124,6 +128,10 @@ hr {
 
 .hidden {
 	display: none;
+}
+
+.strike {
+	text-decoration: line-through;
 }
 
 

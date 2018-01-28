@@ -16,6 +16,10 @@
 		<h1>Game</h1>
 	</header>
 
+	<section class="hidden" id="wait">
+		Wait for everyone to be ready!
+	</section>
+
 	<section id="server-connect">
 		<form onsubmit="return false">
 			<fieldset class="input-section">
@@ -32,11 +36,15 @@
 		</form>
 	</section>
 
-	<section class="voting" id="voting">
+	<section class="hidden" id="host">
+		<button id="ready">Everyone ready?</button>
+	</section>
+
+	<section class="voting hidden" id="voting">
 
 	</section>
 
-	<section class="hidden" id="message">
+	<section class="hidden" id="entry">
 		<div id="message"></div>
 		<form onsubmit="return false">
 			<fieldset class="input-section with-button">

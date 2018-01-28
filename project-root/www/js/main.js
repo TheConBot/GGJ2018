@@ -1,25 +1,19 @@
 var sock;
-var input = document.getElementById('input')
-var message = document.getElementById('message')
-var button = document.getElementById('send')
 var statusMsg = document.getElementById('status')
 var app = document.getElementById('app')
-var testElem = document.getElementById('message')
 
 var data = {
   playerName: null,
   messageType: null,
-  message: null,
-  answers: null
+  message: null
 }
 
 var ipAddressRegex = /(\d){1,3}.(\d){1,3}.(\d){1,3}.(\d){1,3}/
 
 function init() {
-  button.addEventListener('click', sendMessage, false)
+  hideAll()
+  serverConnect.display()
 }
-init()
-
 
 var serverConnect = function () {
   var ipAddress = ''
@@ -28,8 +22,13 @@ var serverConnect = function () {
   var nameInput = document.getElementById('name-input')
   var connectButton = document.getElementById('connect-button')
 
-  function toggleElement(force) {
-    element.classList.toggle('hidden', !force)
+  function display() {
+    element.classList.remove('hidden')
+    connectButton.removeAttribute('disabled')
+  }
+
+  function hide() {
+    element.classList.add('hidden')
   }
 
   function username() {
@@ -56,6 +55,7 @@ var serverConnect = function () {
     ipAddress = serverInput.value
     if (ipAddress.match(ipAddressRegex)) {
       setStatus('trying to connect to ' + ipAddress + ':1024')
+      connectButton.setAttribute('disabled', '')
       sock = new WebSocket('ws://' + ipAddress + ':1024')
       sock.addEventListener('open', onConnect, false)
       sock.addEventListener('message', onMessage, false)
@@ -67,7 +67,8 @@ var serverConnect = function () {
   }
 
   return {
-    toggleElement: toggleElement,
+    display: display,
+    hide: hide,
     serverInput: serverInput,
     username: username,
     serverAddress: serverAddress
@@ -75,16 +76,18 @@ var serverConnect = function () {
 }()
 
 var voting = function () {
-  element = document.getElementById('voting')
+  var element = document.getElementById('voting')
 
-  function displayVoteOptions(options) {
+  function display(options) {
+    console.log(element)
+    element.classList.remove('hidden')
     removeAllChildren(element)
     var ul = document.createElement('ul')
     for (var i = 0; i < options.length; i++) {
       var li = document.createElement('li')
       var btn = document.createElement('button')
       btn.textContent = options[i]
-      btn.setAttribute('id', options[i])
+      btn.setAttribute('data-option', options[i])
       btn.addEventListener('click', vote, false)
       li.appendChild(btn)
       ul.appendChild(li)
@@ -92,14 +95,102 @@ var voting = function () {
     element.appendChild(ul)
   }
 
+  function hide() {
+    element.classList.add('hidden')
+  }
+
   function vote(e) {
-    var voteId = e.target.innerText
-    console.log(voteId)
-    sendMessage(voteId)
+    var buttons = element.getElementsByTagName('button')
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute('disabled', '')
+      if (buttons[i] !== e.target) {
+        buttons[i].classList.add('strike')
+      }
+    }
+    data.messageType = 2
+    console.log(e.target.dataset.option)
+    data.message = e.target.dataset.option
+    sendData(data)
+    e.target.innerText += ' ✔︎'
   }
 
   return {
-    displayVoteOptions: displayVoteOptions
+    display: display,
+    hide: hide
+  }
+}()
+
+var entry = function () {
+  var element = document.getElementById('entry')
+  var submitBtn = document.getElementById('send')
+  var input = document.getElementById('input')
+  var entryDisplay = document.getElementById('message')
+
+  submitBtn.addEventListener('click', sendMessage, false)
+
+  function display(message) {
+    entryDisplay.innerText = message
+    element.classList.remove('hidden')
+  }
+
+  function hide() {
+    element.classList.add('hidden')
+  }
+
+  function sendMessage(message) {
+    data.message = input.value
+    data.messageType = 1
+    sendData(data)
+    clearInput(input)
+  }
+
+  return {
+    display: display,
+    hide: hide
+  }
+}()
+
+var wait = function () {
+  var element = document.getElementById('wait')
+
+  function display(message) {
+    element.textContent = message
+    element.classList.remove('hidden')
+  }
+
+  function hide() {
+    element.classList.add('hidden')
+  }
+
+  return {
+    display: display,
+    hide: hide
+  }
+}()
+
+var host = function () {
+  var element = document.getElementById('host')
+  var readyBtn = document.getElementById('ready')
+
+  readyBtn.addEventListener('click', ready, false)
+
+  function display() {
+    element.classList.remove('hidden')
+  }
+
+  function hide() {
+    element.classList.add('hidden')
+  }
+
+  function ready() {
+    console.log('ready!')
+    data.messageType = 5
+    sendData(data)
+  }
+
+  return {
+    display: display,
+    hide: hide
   }
 }()
 
@@ -108,26 +199,31 @@ function setStatus(text) {
   statusMsg.textContent = text
 }
 
-function onMessage(e) {
-  data = JSON.parse(e.data)
-
-  console.log('→ got')
-  console.log(data)
-}
-
-function sendMessage(message) {
-  data.message = input.value
-  data.messageType = 1
-  sendData(data)
-  clearInput(input)
-}
-
 function sendData(data) {
   console.log('→ sent')
   console.log(data)
 
-  _data = JSON.stringify(data)
-  sock.send(_data)
+  sock.send(JSON.stringify(data))
+}
+
+function onMessage(e) {
+  hideAll()
+  data = JSON.parse(e.data)
+
+  if (data.messageType === 0) {
+    if (data.message[0] === 'host') {
+      host.display()
+    } else {
+      wait.display()
+    }
+  } else if (data.messageType === 1) {
+    entry.display('message!')
+  } else if (data.messageType === 2) {
+    voting.display(['okay', 'test', 'test 2'])
+  }
+
+  console.log('← got')
+  console.log(data)
 }
 
 function onConnect() {
@@ -135,13 +231,14 @@ function onConnect() {
   window.localStorage.setItem('serverAddress', serverConnect.serverAddress())
   window.localStorage.setItem('username', serverConnect.username())
 
-  serverConnect.toggleElement(false)
+  hideAll()
   data.playerName = serverConnect.username().trim()
   data.messageType = 0
 
   sendData(data)
 
-  testElem.classList.remove('hidden')
+  wait.display('wait for all players to join!')
+
   setStatus('connected to server!')
 }
 
@@ -151,8 +248,8 @@ function onError(e) {
 
 function onClose() {
   setStatus('connection to server lost')
-  serverConnect.toggleElement(true)
-  testElem.classList.add('hidden')
+  hideAll()
+  serverConnect.display()
   clearInput(serverConnect.serverInput)
 }
 
@@ -166,5 +263,17 @@ function clearInput(element) {
   element.value = ''
 }
 
+function hideAll() {
+  entry.hide()
+  voting.hide()
+  serverConnect.hide()
+  wait.hide()
+  host.hide()
+}
+
+
+
+
+init()
 
 
