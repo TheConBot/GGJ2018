@@ -137,6 +137,7 @@ h1:first-child {
 
 .restart button {
 	margin-bottom: 1rem;
+	width: 100%;
 }
 
 /* # extras */

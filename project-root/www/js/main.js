@@ -90,17 +90,21 @@ var serverConnect = function () {
 var voting = function () {
   var element = document.getElementById('voting')
 
-  function display(options) {
+  function display(options, textCount) {
     element.classList.remove('hidden')
     removeAllChildren(element)
     var ul = document.createElement('ul')
     for (var i = 0; i < options.length; i++) {
       var li = document.createElement('li')
-      var btn = document.createElement('button')
-      btn.textContent = options[i]
-      btn.setAttribute('data-option', options[i])
-      btn.addEventListener('click', vote, false)
-      li.appendChild(btn)
+      if (i < textCount) {
+        li.textContent = options[i]
+      } else {
+        var btn = document.createElement('button')
+        btn.textContent = options[i]
+        btn.setAttribute('data-option', options[i])
+        btn.addEventListener('click', vote, false)
+        li.appendChild(btn)
+      }
       ul.appendChild(li)
     }
     element.appendChild(ul)
@@ -287,7 +291,7 @@ function onMessage(e) {
   } else if (m.messageType === 2) {
     round = ''
     if (m.message[0] === 'Once upon a time...') {
-      voting.display(m.message.slice(2))
+      voting.display(m.message, 2)
     } else {
       voting.display(m.message)
     }
