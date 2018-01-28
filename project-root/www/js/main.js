@@ -1,5 +1,6 @@
 var sock;
 var statusMsg = document.getElementById('status')
+var header = document.getElementById('header')
 var app = document.getElementById('app')
 
 var data = {
@@ -124,13 +125,13 @@ var voting = function () {
 var entry = function () {
   var element = document.getElementById('entry')
   var submitBtn = document.getElementById('send')
-  var input = document.getElementById('input')
+  var input = document.getElementById('entry-input')
   var entryDisplay = document.getElementById('message')
 
   submitBtn.addEventListener('click', sendMessage, false)
 
   function display(message) {
-    entryDisplay.innerText = message
+    entryDisplay.innerText = message[message.length - 1]
     element.classList.remove('hidden')
   }
 
@@ -143,6 +144,8 @@ var entry = function () {
     data.messageType = 1
     sendData(data)
     clearInput(input)
+    hideAll()
+    wait.display('waiting for all other players')
   }
 
   return {
@@ -209,22 +212,26 @@ function sendData(data) {
 
 function onMessage(e) {
   hideAll()
-  _data = JSON.parse(e.data)
+  m = JSON.parse(e.data)
 
-  if (_data.messageType === 0) {
-    if (_data.message[0] === 'host') {
+  header.innerText = (m.messageTitle === null) ? "Writer's Flock" : m.messageTitle
+
+  console.log('%c← got', 'color: #55f')
+  console.log(m)
+
+  if (m.messageType === 0) {
+    setStatus('connected to game!')
+    if (m.message[0] === 'host') {
       host.display()
     } else {
       wait.display()
     }
-  } else if (_data.messageType === 1) {
-    entry.display('message!')
-  } else if (_data.messageType === 2) {
-    voting.display(['okay', 'test', 'test 2'])
+  } else if (m.messageType === 1) {
+    entry.display(m.message)
+  } else if (m.messageType === 2) {
+    voting.display(m.message)
   }
 
-  console.log('%c← got', 'color: #55f')
-  console.log(_data)
 }
 
 function onConnect() {
@@ -238,9 +245,9 @@ function onConnect() {
 
   sendData(data)
 
-  wait.display('wait for all players to join!')
+  wait.display('Connecting to server...')
 
-  setStatus('connected to server!')
+  setStatus('connected to server, waiting for response...')
 }
 
 function onError(e) {
@@ -251,7 +258,7 @@ function onClose() {
   setStatus('connection to server lost')
   hideAll()
   serverConnect.display()
-  clearInput(serverConnect.serverInput)
+  // clearInput(serverConnect.serverInput)
 }
 
 function removeAllChildren(parent) {
