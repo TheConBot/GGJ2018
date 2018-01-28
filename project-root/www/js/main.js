@@ -3,6 +3,8 @@ var statusMsg = document.getElementById('status')
 var header = document.getElementById('header')
 var app = document.getElementById('app')
 
+var sentenceRound = false;
+
 var data = {
   playerName: null,
   messageType: null,
@@ -140,7 +142,10 @@ var entry = function () {
   }
 
   function sendMessage(message) {
-    if (input.value.length > 0) {
+    var m = input.value
+    m = m.trim()
+    m = m.replace(/\s\s+/g, ' ')
+    if (m.length > 0) {
       data.message = input.value
       data.messageType = 1
       sendData(data)
@@ -218,8 +223,8 @@ function onMessage(e) {
 
   header.innerText = (m.messageTitle === null) ? "Writer's Flock" : m.messageTitle
 
-  if (m.numberOfWritingTurns !== null) {
-    setStatus('turn number: ' + m.numberOfWritingTurns)
+  if (m.numberOfWritingRounds !== null) {
+    setStatus('turn number: ' + m.numberOfWritingRounds)
   }
 
   console.log('%c← got', 'color: #55f')
@@ -227,6 +232,7 @@ function onMessage(e) {
 
   if (m.messageType === 0) {
     setStatus('connected to game!')
+    sentenceRound = true
     if (m.message[0] === 'host') {
       host.display()
     } else {
@@ -235,7 +241,12 @@ function onMessage(e) {
   } else if (m.messageType === 1) {
     entry.display(m.message)
   } else if (m.messageType === 2) {
-    voting.display(m.message)
+    if (sentenceRound) {
+      voting.display(m.message.splice(0,2))
+      sentenceRound = false
+    } else {
+      voting.display(m.message)
+    }
   } else if (m.messageType === 6) {
     wait.display()
   }
