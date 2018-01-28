@@ -1,9 +1,12 @@
 var sock;
 var statusMsg = document.getElementById('status')
 var header = document.getElementById('header')
+var logo = document.getElementById('logo')
 var app = document.getElementById('app')
-var title = 'Writer\'s Flock'
+var title = ''
 var currentRound;
+var round;
+var playerIcon;
 
 var sentenceRound = false;
 
@@ -17,6 +20,7 @@ var ipAddressRegex = /(\d){1,3}.(\d){1,3}.(\d){1,3}.(\d){1,3}/
 
 function init() {
   hideAll()
+  logo.src = 'img/writersflocklogo.png'
   serverConnect.display()
 }
 
@@ -132,11 +136,22 @@ var entry = function () {
   var submitBtn = document.getElementById('send')
   var input = document.getElementById('entry-input')
   var entryDisplay = document.getElementById('message')
+  var endingDisplay = document.getElementById('ending')
 
   submitBtn.addEventListener('click', sendMessage, false)
 
   function display(message) {
-    entryDisplay.innerText = message[message.length - 1]
+    if (round !== '2') {
+      entryDisplay.innerText = 'Last line: ' + message[message.length - 1]
+      endingDisplay.classList.add('hidden')
+    } else {
+      endingDisplay.innerText = 'Ending line: ' + message[message.length - 1]
+      entryDisplay.innerText = 'Last line: ' + message[message.length - 2]
+      endingDisplay.classList.remove('hidden')
+    }
+    if (message[message.length - 1] === undefined) {
+      entryDisplay.classList.add('hidden')
+    }
     element.classList.remove('hidden')
   }
 
@@ -185,6 +200,12 @@ var wait = function () {
 var host = function () {
   var element = document.getElementById('host')
   var readyBtn = document.getElementById('ready')
+  var restartElem = document.getElementById('restartSection')
+  var restartBtn = document.getElementById('restart')
+  var quitBtn = document.getElementById('quit')
+
+  restartBtn.addEventListener('click', restartGame, false)
+  quitBtn.addEventListener('click', quitGame, false)
 
   readyBtn.addEventListener('click', ready, false)
 
@@ -194,6 +215,7 @@ var host = function () {
 
   function hide() {
     element.classList.add('hidden')
+    restartElem.classList.add('hidden')
   }
 
   function ready() {
@@ -202,9 +224,24 @@ var host = function () {
     sendData(data)
   }
 
+  function restart() {
+    restartElem.classList.remove('hidden')
+  }
+  function restartGame() {
+    data.messageType = 3
+    sendData(data)
+    hideAll()
+  }
+  function quitGame() {
+    data.messageType = 4
+    sendData(data)
+    hideAll()
+  }
+
   return {
     display: display,
-    hide: hide
+    hide: hide,
+    restart: restart
   }
 }()
 
@@ -238,7 +275,9 @@ function onMessage(e) {
     setStatus('connected to game!')
     sentenceRound = true
     currentRound = 0;
-    if (m.message[0] === 'host') {
+    playerIcon = m.message[0]
+    logo.src = playerIcon
+    if (m.message.includes('host')) {
       host.display()
     } else {
       wait.display()
@@ -246,11 +285,16 @@ function onMessage(e) {
   } else if (m.messageType === 1) {
     entry.display(m.message)
   } else if (m.messageType === 2) {
+    round = ''
     if (m.message[0] === 'Once upon a time...') {
       voting.display(m.message.slice(2))
     } else {
       voting.display(m.message)
     }
+  } else if (m.messageType === 4) {
+    host.restart()
+  } else if (m.messageType === 5) {
+    round = m.message[0]
   } else if (m.messageType === 6) {
     wait.display()
   }

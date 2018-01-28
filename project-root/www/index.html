@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="description" content="">
-	<title>title</title>
+	<title>Writer's Flock</title>
 	<!-- <link rel="apple-touch-icon" href=""> -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="style.css">
@@ -13,6 +13,7 @@
 <main id="app">
 
 	<header>
+		<img id="logo" src="img/writersflocklogo.png">
 		<h1 id="header">Writer's Flock</h1>
 	</header>
 
@@ -31,7 +32,8 @@
 				<input type="text" name="server-connect" id="server-input" maxlength="15" placeholder="192.168.1.1">
 			</fieldset>
 			<fieldset class="input-section">
-				<input type="submit" name="submit" id="connect-button" value="Connect">
+				<!-- <input type="submit" name="submit" id="connect-button" value="Connect"> -->
+				<input type="image" src="img/SUBMIT.png" name="submit" id="connect-button" value="Connect">
 			</fieldset>
 		</form>
 	</section>
@@ -44,17 +46,24 @@
 
 	</section>
 
+	<section class="restart hidden" id="restartSection">
+		<button id="restart">Play again with same players</button>
+		<button id="quit">Play again with new players</button>
+	</section>
+
 	<section class="hidden" id="entry">
 		<div id="message"></div>
+		<div id="ending"></div>
 		<form onsubmit="return false">
 			<fieldset class="input-section with-button">
 				<input type="text" name="sock" id="entry-input" maxlength="50" placeholder="entry">
-				<input type="submit" name="submit" id="send" value="Submit">
+				<!-- <input type="submit" name="submit" id="send" value="Submit"> -->
+				<input type="image" src="img/SUBMIT.png" name="submit" id="send" value="Submit">
 			</fieldset>
 		</form>
 	</section>
 
-	<section id="status">~ status ~</section>
+	<section id="status">---</section>
 
 
 </main>
