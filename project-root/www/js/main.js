@@ -53,10 +53,11 @@ var serverConnect = function () {
 
   function connectServer(e) {
     ipAddress = serverInput.value
+    var port = 1024;
     if (ipAddress.match(ipAddressRegex)) {
-      setStatus('trying to connect to ' + ipAddress + ':1024')
+      setStatus('trying to connect to ' + ipAddress + ':' + port)
       connectButton.setAttribute('disabled', '')
-      sock = new WebSocket('ws://' + ipAddress + ':1024')
+      sock = new WebSocket('ws://' + ipAddress + ':' + port)
       sock.addEventListener('open', onConnect, false)
       sock.addEventListener('message', onMessage, false)
       sock.addEventListener('error', onError, false)
@@ -200,7 +201,7 @@ function setStatus(text) {
 }
 
 function sendData(data) {
-  console.log('→ sent')
+  console.log('%c→ sent', 'color: #f55')
   console.log(data)
 
   sock.send(JSON.stringify(data))
@@ -208,22 +209,22 @@ function sendData(data) {
 
 function onMessage(e) {
   hideAll()
-  data = JSON.parse(e.data)
+  _data = JSON.parse(e.data)
 
-  if (data.messageType === 0) {
-    if (data.message[0] === 'host') {
+  if (_data.messageType === 0) {
+    if (_data.message[0] === 'host') {
       host.display()
     } else {
       wait.display()
     }
-  } else if (data.messageType === 1) {
+  } else if (_data.messageType === 1) {
     entry.display('message!')
-  } else if (data.messageType === 2) {
+  } else if (_data.messageType === 2) {
     voting.display(['okay', 'test', 'test 2'])
   }
 
-  console.log('← got')
-  console.log(data)
+  console.log('%c← got', 'color: #55f')
+  console.log(_data)
 }
 
 function onConnect() {
