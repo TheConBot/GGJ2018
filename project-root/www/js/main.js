@@ -1,9 +1,13 @@
 var sock;
 var statusMsg = document.getElementById('status')
 var header = document.getElementById('header')
+var logo = document.getElementById('logo')
 var app = document.getElementById('app')
-var title = 'Writer\'s Flock'
+var title = ''
 var currentRound;
+var totalrounds;
+var round;
+var playerIcon;
 
 var sentenceRound = false;
 
@@ -17,6 +21,7 @@ var ipAddressRegex = /(\d){1,3}.(\d){1,3}.(\d){1,3}.(\d){1,3}/
 
 function init() {
   hideAll()
+  logo.src = 'img/characters/char0-QUESTION.png'
   serverConnect.display()
 }
 
@@ -86,17 +91,21 @@ var serverConnect = function () {
 var voting = function () {
   var element = document.getElementById('voting')
 
-  function display(options) {
+  function display(options, textCount) {
     element.classList.remove('hidden')
     removeAllChildren(element)
     var ul = document.createElement('ul')
     for (var i = 0; i < options.length; i++) {
       var li = document.createElement('li')
-      var btn = document.createElement('button')
-      btn.textContent = options[i]
-      btn.setAttribute('data-option', options[i])
-      btn.addEventListener('click', vote, false)
-      li.appendChild(btn)
+      if (i < textCount) {
+        li.textContent = options[i]
+      } else {
+        var btn = document.createElement('button')
+        btn.textContent = options[i]
+        btn.setAttribute('data-option', options[i])
+        btn.addEventListener('click', vote, false)
+        li.appendChild(btn)
+      }
       ul.appendChild(li)
     }
     element.appendChild(ul)
@@ -132,11 +141,22 @@ var entry = function () {
   var submitBtn = document.getElementById('send')
   var input = document.getElementById('entry-input')
   var entryDisplay = document.getElementById('message')
+  var endingDisplay = document.getElementById('ending')
 
   submitBtn.addEventListener('click', sendMessage, false)
 
   function display(message) {
-    entryDisplay.innerText = message[message.length - 1]
+    if (round !== '2') {
+      entryDisplay.innerText = 'Last line: ' + message[message.length - 1]
+      endingDisplay.classList.add('hidden')
+    } else {
+      endingDisplay.innerText = 'Ending line: ' + message[message.length - 1]
+      entryDisplay.innerText = 'Last line: ' + message[message.length - 2]
+      endingDisplay.classList.remove('hidden')
+    }
+    if (message[message.length - 1] === undefined) {
+      entryDisplay.classList.add('hidden')
+    }
     element.classList.remove('hidden')
   }
 
@@ -185,6 +205,12 @@ var wait = function () {
 var host = function () {
   var element = document.getElementById('host')
   var readyBtn = document.getElementById('ready')
+  var restartElem = document.getElementById('restartSection')
+  var restartBtn = document.getElementById('restart')
+  var quitBtn = document.getElementById('quit')
+
+  restartBtn.addEventListener('click', restartGame, false)
+  quitBtn.addEventListener('click', quitGame, false)
 
   readyBtn.addEventListener('click', ready, false)
 
@@ -194,6 +220,7 @@ var host = function () {
 
   function hide() {
     element.classList.add('hidden')
+    restartElem.classList.add('hidden')
   }
 
   function ready() {
@@ -202,9 +229,24 @@ var host = function () {
     sendData(data)
   }
 
+  function restart() {
+    restartElem.classList.remove('hidden')
+  }
+  function restartGame() {
+    data.messageType = 3
+    sendData(data)
+    hideAll()
+  }
+  function quitGame() {
+    data.messageType = 4
+    sendData(data)
+    init()
+  }
+
   return {
     display: display,
-    hide: hide
+    hide: hide,
+    restart: restart
   }
 }()
 
@@ -225,11 +267,6 @@ function onMessage(e) {
   m = JSON.parse(e.data)
 
   header.innerText = (m.messageTitle === null) ? title : m.messageTitle
-  currentRound++;
-
-  if (m.numberOfWritingRounds !== null) {
-    setStatus('Rounds left: ' + (m.numberOfWritingRounds - currentRound))
-  }
 
   console.log('%c← got', 'color: #55f')
   console.log(m)
@@ -237,20 +274,36 @@ function onMessage(e) {
   if (m.messageType === 0) {
     setStatus('connected to game!')
     sentenceRound = true
-    currentRound = 0;
-    if (m.message[0] === 'host') {
+    currentRound = 0
+    playerIcon = m.message[0]
+    logo.src = 'img/characters/' + playerIcon + '.png'
+    if (m.message.includes('host')) {
       host.display()
     } else {
       wait.display()
     }
   } else if (m.messageType === 1) {
+    currentRound++
+
+    if (m.numberOfWritingRounds !== null && m.numberOfWritingRounds !== 0) {
+      totalrounds = m.numberOfWritingRounds
+    }
+    // setStatus('Rounds left: ' + (totalrounds - currentRound))
+    setStatus('')
+
     entry.display(m.message)
   } else if (m.messageType === 2) {
+    round = ''
+    currentRound = 0
     if (m.message[0] === 'Once upon a time...') {
-      voting.display(m.message.slice(2))
+      voting.display(m.message, 2)
     } else {
       voting.display(m.message)
     }
+  } else if (m.messageType === 4) {
+    host.restart()
+  } else if (m.messageType === 5) {
+    round = m.message[0]
   } else if (m.messageType === 6) {
     wait.display()
   }
