@@ -46,11 +46,11 @@ namespace WritersFlock
                     UnityMainThreadDispatcher.Instance().Enqueue(ServerManager.instance.RecievedVote(message.playerName, message.message));
                     break;
                 case MessageType.Restart:
-                    Debug.Log("Starting Game");
+                    Debug.Log("Restart With Old Players");
                     UnityMainThreadDispatcher.Instance().Enqueue(ServerManager.instance.ClearGameData(true));
                     break;
                 case MessageType.Quit:
-                    Debug.Log("Starting Game");
+                    Debug.Log("Restart With New Players");
                     UnityMainThreadDispatcher.Instance().Enqueue(ServerManager.instance.ClearGameData(false));
                     break;
             }

@@ -10,6 +10,10 @@ namespace WritersFlock
 
         public List<AudioClip> music;
 
+        public AudioSource narSource;
+        public AudioClip introClip;
+        public AudioClip resultsClip;
+
         public Text serverAddressText;
         public List<GameObject> playerPanels;
 
@@ -19,14 +23,16 @@ namespace WritersFlock
         public Text bestStoryBodyText;
         public Text featuredAuthorText;
         public Image featuresAuthorImage;
+        public Text featuredSentance;
+
+        private AudioSource audioSource;
+        public AudioClip mainMenuMusic;
+        public AudioClip resultsMusic;
+
 
         [SerializeField] List<Sprite> characters;
         List<Sprite> shuffledCharacters;
 
-        public void Awake ()
-        {
-            CheckLobbyScreenState();
-        }
 
         public void CheckLobbyScreenState ()
         {
@@ -34,12 +40,30 @@ namespace WritersFlock
             {
                 joinPanel.SetActive(false);
                 resultsPanel.SetActive(true);
+                DisplayResults(ServerManager.instance.selectedStory, ServerManager.instance.importantPlayer);
+                audioSource.clip = resultsMusic;
+                audioSource.Play();
+                narSource.clip = resultsClip;
+                narSource.Play();
             }
             else
             {
-                joinPanel.SetActive(false);
-                resultsPanel.SetActive(true);
+                joinPanel.SetActive(true);
+                resultsPanel.SetActive(false);
+                audioSource.clip = mainMenuMusic;
+                audioSource.Play();
+                narSource.clip = introClip;
+                narSource.Play();
             }
+        }
+
+        public void Start ()
+        {
+            audioSource = GetComponent<AudioSource>();
+            serverAddressText.text = "Server Address: " + Network.player.ipAddress;
+            shuffledCharacters = new List<Sprite>(characters);
+            shuffledCharacters.Shuffle();
+            CheckLobbyScreenState();
         }
 
         public void DisplayResults(Story chosenStory, Player chosenPlayer)
@@ -54,21 +78,30 @@ namespace WritersFlock
             bestStoryBodyText.text = body;
             featuredAuthorText.text = "Featured Author:\n" + chosenPlayer.name;
             featuresAuthorImage.sprite = chosenPlayer.playerAvatar;
+            StartCoroutine(ChangeFeaturedSentance(chosenPlayer.playerSentances));
         }
 
-        public void Start ()
+        private IEnumerator ChangeFeaturedSentance(List<string> sentances)
         {
-            serverAddressText.text = "Server Address: " + Network.player.ipAddress;
-            shuffledCharacters = new List<Sprite>(characters);
-            shuffledCharacters.Shuffle();
+            sentances.Shuffle();
+            while (ServerManager.instance.isPlaying)
+            {
+                for (int i = 0; i < sentances.Count; i++)
+                {
+                    featuredSentance.text = sentances[i];
+                    yield return new WaitForSeconds(3);
+                }
+            }
+            yield return null;
         }
 
-        public void AddNewPlayerToScreen (Player player)
+        public IEnumerator AddNewPlayerToScreen (Player player)
         {
             int index = player.playerIndex;
             playerPanels[index].GetComponentInChildren<Text>().text = player.name;
             playerPanels[index].GetComponentInChildren<Image>().sprite = shuffledCharacters[index];
             player.playerAvatar = shuffledCharacters[index];
+            yield return null;
         }
 
     }

@@ -10,7 +10,13 @@ namespace WritersFlock
 {
     public class MainManager : MonoBehaviour
     {
-        public AudioSource audioSource;
+        private AudioSource audioSource;
+        public AudioSource narSource;
+
+        public AudioClip round1Intro;
+        public AudioClip round2Intro;
+        public AudioClip round3Intro;
+
         public List<AudioClip> music;
         public GameObject writingPanel;
         public GameObject singleVotingPanel;
@@ -25,8 +31,14 @@ namespace WritersFlock
         [HideInInspector]
         public int currentTurn = 0;
 
+        public AudioClip round1Music;
+        public AudioClip round2Music;
+        public AudioClip round3Music;
+
+
         public void Start ()
         {
+            audioSource = GetComponent<AudioSource>();
             ChangeToWritingPanel();
             ServerManager.instance.StartWritingRound(this);
         }
@@ -113,6 +125,24 @@ namespace WritersFlock
             writingPanel.SetActive(true);
             groupVotingPanel.SetActive(false);
             singleVotingPanel.SetActive(false);
+            switch (CurrentRound().roundNumber)
+            {
+                case 1:
+                    audioSource.clip = round1Music;
+                    narSource.clip = round1Intro;
+                    break;
+                case 2:
+                    audioSource.clip = round2Music;
+                    narSource.clip = round2Intro;
+                    break;
+                case 3:
+                    audioSource.clip = round3Music;
+                    narSource.clip = round3Intro;
+                    break;
+            }
+            audioSource.Play();
+            narSource.Play();
+
         }
 
         public RoundSettings CurrentRound ()
